@@ -9,7 +9,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'bundle.js',
-        publicPath: 'Hillel-HW-25.1/',
+        publicPath: '/Hillel-HW-25.1/',
     },
 
     module: {
