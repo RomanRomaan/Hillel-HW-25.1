@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/EveryDayCodding/weatherapp/style.css">
+</head>
+
+<body>
+    <main>
+
+        <div class="weather-widget">
+            <div class="weather-header">
+                <span class="weather-date" id="weather-date"></span>
+                <span class="weather-time" id="weather-time"></span>
+            </div>
+            <div class="weather-main">
+                <div class="weather-icon" id="weather-icon"></div>
+                <div class="weather-temp" id="weather-temp">--°C</div>
+            </div>
+            <div class="weather-feel">
+                <span>Feels like: <span id="weather-feels">--°C</span></span>
+                <div class="weather__desc">
+                    <span id="weather-desc">--</span>
+                    <br>
+                    <span id="weather-desc-more"></span>
+                </div>
+
+            </div>
+            <div class="weather-details">
+                <div>Humidity: <span id="weather-humidity">--%</span></div>
+                <div>Pressure: <span id="weather-pressure">-- hPa</span></div>
+                <div>Wind: <span id="weather-wind">-- m/s</span></div>
+            </div>
+            <button id="weather-refresh" title="Refresh" class="weather-refresh">⟳</button>
+        </div>
+
+    </main>
+
+</body>
+<script src="script.js"></script>
+
+</html>
