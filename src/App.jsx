@@ -26,10 +26,15 @@ class App extends React.Component {
     handleVote = (idx) => {
         this.setState(
             (prev) => {
-                const votes = prev.votes.map((v, i) =>
-                    i === idx ? { ...v, count: v.count + 1 } : v
-                );
-                return { votes };
+                const updatedVotes = prev.votes.map((voteItem, index) => {
+                    if (index === idx) {
+                        return { ...voteItem, count: voteItem.count + 1 };
+                    } else {
+                        return voteItem;
+                    }
+                });
+                // вернуть новый state
+                return { votes: updatedVotes };
             },
             () => {
                 localStorage.setItem(LS_KEY, JSON.stringify(this.state.votes));
@@ -38,10 +43,19 @@ class App extends React.Component {
     };
 
     showResults = () => {
-        const { votes } = this.state;
-        const max = Math.max(...votes.map((v) => v.count));
-        const winnerIdx = votes.findIndex((v) => v.count === max);
-        this.setState({ winnerIdx });
+        // достаём массив голосов из state
+        const votesArray = this.state.votes;
+
+        // берём все значения count (количество голосов) и ищем максимум
+        const maxCount = Math.max(...votesArray.map((voteItem) => voteItem.count));
+
+        // ищем индекс первого элемента, у которого count равен максимуму
+        const winnerIndex = votesArray.findIndex(
+            (voteItem) => voteItem.count === maxCount
+        );
+
+        // сохраняем индекс победителя в state
+        this.setState({ winnerIdx: winnerIndex });
     };
 
     clearResults = () => {
