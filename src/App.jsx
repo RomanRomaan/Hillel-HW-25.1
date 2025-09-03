@@ -66,51 +66,65 @@ class App extends React.Component {
     };
 
     totalVotes() {
-        return this.state.votes.reduce((s, v) => s + v.count, 0);
+        return this.state.votes.reduce((sum, voteItem) => {
+            return sum + voteItem.count;
+        }, 0);
     }
 
     render() {
         const { votes, winnerIdx } = this.state;
-        const winner = winnerIdx !== null ? votes[winnerIdx] : null;
+        const winnerEmojiObject = winnerIdx !== null ? votes[winnerIdx] : null;
 
         return (
             <div className="page">
                 <h1 className="title">Голосування за найкращий смайлик</h1>
 
                 <div className="row">
-                    {votes.map((v, idx) => (
-                        <div key={idx} className="emojiCol">
+                    {votes.map((voteItem, voteIndex) => (
+                        <div key={voteIndex} className="emojiCol">
                             <button
                                 type="button"
-                                onClick={() => this.handleVote(idx)}
+                                onClick={() => this.handleVote(voteIndex)}
                                 className="emojiBtn"
-                                aria-label={`Голосувати за ${v.emoji}`}
+                                aria-label={`Голосувати за ${voteItem.emoji}`}
                                 title="Натисни, щоб проголосувати"
                             >
-                                <span className="emoji">{v.emoji}</span>
+                                <span className="emoji">{voteItem.emoji}</span>
                             </button>
-                            <div className="count">{v.count}</div>
+                            <div className="count">{voteItem.count}</div>
                         </div>
                     ))}
                 </div>
 
                 <div className="actions">
-                    <button type="button" onClick={this.showResults} className="primary">
+                    <button
+                        type="button"
+                        onClick={this.showResults}
+                        className="primary"
+                    >
                         Show Results
                     </button>
-                    <button type="button" onClick={this.clearResults} className="danger">
+                    <button
+                        type="button"
+                        onClick={this.clearResults}
+                        className="danger"
+                    >
                         Очистити результати
                     </button>
                 </div>
 
-                <div style={{ marginTop: 32 }}>
+                <div className="results">
                     <h2 className="subtitle">Результати голосування:</h2>
-                    {winner ? (
-                        <div style={{ textAlign: "center", marginTop: 12 }}>
+                    {winnerEmojiObject ? (
+                        <div className="resultsInner">
                             <div className="label">Переможець:</div>
-                            <div style={{ fontSize: 72, lineHeight: 1 }}>{winner.emoji}</div>
-                            <div className="smallNote">Кількість голосів: {winner.count}</div>
-                            <div className="smallNote">Всього голосів: {this.totalVotes()}</div>
+                            <div className="winnerEmoji">{winnerEmojiObject.emoji}</div>
+                            <div className="smallNote">
+                                Кількість голосів: {winnerEmojiObject.count}
+                            </div>
+                            <div className="smallNote">
+                                Всього голосів: {this.totalVotes()}
+                            </div>
                         </div>
                     ) : (
                         <div className="smallNote">Натисніть «Show Results»</div>
@@ -119,6 +133,6 @@ class App extends React.Component {
             </div>
         );
     }
-}
 
+}
 export default App;
