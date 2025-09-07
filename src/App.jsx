@@ -5,70 +5,84 @@ import "./App.css";
 const EMOJIS = ["😃", "😊", "😎", "🤩", "😍"];
 const LS_KEY = "emoji-votes-v1";
 
-class App extends React.Component {
+export default class App extends React.Component {
     constructor(props) {
         super(props);
+
+        const makeDefault = () => EMOJIS.map((e) => ({ emoji: e, count: 0 }));
+        let votes = makeDefault();
+
+        // 👉 Читаем localStorage синхронно в конструкторе (как просил препод)
+        try {
+            if (typeof window !== "undefined" && window.localStorage) {
+                const raw = window.localStorage.getItem(LS_KEY);
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    const isValid =
+                        Array.isArray(saved) &&
+                        saved.length === EMOJIS.length &&
+                        saved.every(
+                            (it, i) =>
+                                it &&
+                                typeof it.emoji === "string" &&
+                                it.emoji === EMOJIS[i] &&
+                                Number.isFinite(it.count) &&
+                                it.count >= 0
+                        );
+                    if (isValid) votes = saved;
+                }
+            }
+        } catch {
+            // если парсинг/доступ упали — оставляем дефолт
+        }
+
         this.state = {
-            votes: EMOJIS.map((e) => ({ emoji: e, count: 0 })),
+            votes,
             winnerIdx: null, // индекс победителя (или null)
         };
     }
 
-    componentDidMount() {
-        try {
-            const saved = JSON.parse(localStorage.getItem(LS_KEY));
-            if (Array.isArray(saved) && saved.length === EMOJIS.length) {
-                this.setState({ votes: saved });
-            }
-        } catch (_) { }
-    }
+    // componentDidMount НЕ нужен — всё уже инициализировано в конструкторе
 
     handleVote = (idx) => {
         this.setState(
             (prev) => {
-                const updatedVotes = prev.votes.map((voteItem, index) => {
-                    if (index === idx) {
-                        return { ...voteItem, count: voteItem.count + 1 };
-                    } else {
-                        return voteItem;
-                    }
-                });
-                // вернуть новый state
+                const updatedVotes = prev.votes.map((v, i) =>
+                    i === idx ? { ...v, count: v.count + 1 } : v
+                );
                 return { votes: updatedVotes };
             },
             () => {
-                localStorage.setItem(LS_KEY, JSON.stringify(this.state.votes));
+                try {
+                    window.localStorage?.setItem(LS_KEY, JSON.stringify(this.state.votes));
+                } catch {
+                    // игнор — просто не сохранили
+                }
             }
         );
     };
 
     showResults = () => {
-        // достаём массив голосов из state
-        const votesArray = this.state.votes;
+        const { votes } = this.state;
+        const total = votes.reduce((s, v) => s + v.count, 0);
+        if (total === 0) return this.setState({ winnerIdx: null }); // нет голосов — нет победителя
 
-        // берём все значения count (количество голосов) и ищем максимум
-        const maxCount = Math.max(...votesArray.map((voteItem) => voteItem.count));
-
-        // ищем индекс первого элемента, у которого count равен максимуму
-        const winnerIndex = votesArray.findIndex(
-            (voteItem) => voteItem.count === maxCount
-        );
-
-        // сохраняем индекс победителя в state
+        const maxCount = Math.max(...votes.map((v) => v.count));
+        const winnerIndex = votes.findIndex((v) => v.count === maxCount);
         this.setState({ winnerIdx: winnerIndex });
     };
 
     clearResults = () => {
         const reset = EMOJIS.map((e) => ({ emoji: e, count: 0 }));
         this.setState({ votes: reset, winnerIdx: null }, () => {
-            localStorage.removeItem(LS_KEY);
+            try {
+                window.localStorage?.removeItem(LS_KEY);
+            } catch { }
         });
     };
 
     totalVotes() {
-        return this.state.votes.reduce((sum, voteItem) => {
-            return sum + voteItem.count;
-        }, 0);
+        return this.state.votes.reduce((sum, v) => sum + v.count, 0);
     }
 
     render() {
@@ -81,7 +95,7 @@ class App extends React.Component {
 
                 <div className="row">
                     {votes.map((voteItem, voteIndex) => (
-                        <div key={voteIndex} className="emojiCol">
+                        <div key={voteItem.emoji} className="emojiCol">
                             <button
                                 type="button"
                                 onClick={() => this.handleVote(voteIndex)}
@@ -97,18 +111,10 @@ class App extends React.Component {
                 </div>
 
                 <div className="actions">
-                    <button
-                        type="button"
-                        onClick={this.showResults}
-                        className="primary"
-                    >
+                    <button type="button" onClick={this.showResults} className="primary">
                         Show Results
                     </button>
-                    <button
-                        type="button"
-                        onClick={this.clearResults}
-                        className="danger"
-                    >
+                    <button type="button" onClick={this.clearResults} className="danger">
                         Очистити результати
                     </button>
                 </div>
@@ -122,9 +128,7 @@ class App extends React.Component {
                             <div className="smallNote">
                                 Кількість голосів: {winnerEmojiObject.count}
                             </div>
-                            <div className="smallNote">
-                                Всього голосів: {this.totalVotes()}
-                            </div>
+                            <div className="smallNote">Всього голосів: {this.totalVotes()}</div>
                         </div>
                     ) : (
                         <div className="smallNote">Натисніть «Show Results»</div>
@@ -133,6 +137,4 @@ class App extends React.Component {
             </div>
         );
     }
-
 }
-export default App;
